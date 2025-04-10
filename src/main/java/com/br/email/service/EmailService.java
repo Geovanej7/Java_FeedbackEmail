@@ -1,35 +1,59 @@
 package com.br.email.service;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import java.nio.charset.StandardCharsets;
+import java.util.Properties;
+
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.JavaMailSenderImpl;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
 
 import com.br.email.model.dto.FeedbackDto;
 
 import jakarta.mail.internet.MimeMessage;
+import jakarta.mail.internet.InternetAddress;
 
 @Service
 public class EmailService {
-    @Autowired
-    private JavaMailSender javaMailSender;
 
     @Value("${spring.mail.username}")
-    private String remetente;
+    private String username;
+
+    @Value("${spring.mail.password}")
+    private String password;
+
+    @Value("${spring.mail.host}")
+    private String host;
+
+    @Value("${spring.mail.port}")
+    private int port;
+
+    @Value("${spring.mail.properties.mail.smtp.auth}")
+    private String smtpAuth;
+
+    @Value("${spring.mail.properties.mail.smtp.starttls.enable}")
+    private String starttls;
 
     public String enviarEmailFeedback(FeedbackDto dto) {
         try {
-            MimeMessage message = javaMailSender.createMimeMessage();
+            JavaMailSenderImpl mailSender = new JavaMailSenderImpl();
+            mailSender.setHost(host);
+            mailSender.setPort(port);
+            mailSender.setUsername(username);
+            mailSender.setPassword(password);
+
+            Properties props = mailSender.getJavaMailProperties();
+            props.put("mail.transport.protocol", "smtp");
+            props.put("mail.smtp.auth", smtpAuth);
+            props.put("mail.smtp.starttls.enable", starttls);
+            props.put("mail.debug", "false");
+
+            MimeMessage message = mailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(message, "utf-8");
 
-            System.out.println(dto.getEmail());
-            System.out.println(dto.getAssunto());
-            System.out.println(dto.getMensagem());
-
-            helper.setFrom(remetente); 
-            helper.setTo(remetente);   
-            helper.setReplyTo(dto.getEmail()); 
+            helper.setFrom(new InternetAddress(username));
+            helper.setTo(username); // você pode ajustar para dto.getEmail() se quiser enviar para o cliente
+            helper.setReplyTo(dto.getEmail());
             helper.setSubject(dto.getAssunto());
 
             String corpoHtml = String.format(
@@ -38,11 +62,13 @@ public class EmailService {
                 dto.getEmail(), dto.getMensagem()
             );
 
-            helper.setText(corpoHtml, true);
-            javaMailSender.send(message);
+            helper.setText(new String(corpoHtml.getBytes(), StandardCharsets.ISO_8859_1), true);
+            helper.setEncodeFilenames(true);
 
+            mailSender.send(message);
             return "Feedback enviado com sucesso!";
         } catch (Exception e) {
+            e.printStackTrace(); // bom pra logar o erro detalhado
             return "Erro ao enviar email: " + e.getMessage();
         }
     }
