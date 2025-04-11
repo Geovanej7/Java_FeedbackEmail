@@ -52,7 +52,7 @@ public class EmailService {
             MimeMessageHelper helper = new MimeMessageHelper(message, "utf-8");
 
             helper.setFrom(new InternetAddress(username));
-            helper.setTo(username); // você pode ajustar para dto.getEmail() se quiser enviar para o cliente
+            helper.setTo(username); 
             helper.setReplyTo(dto.getEmail());
             helper.setSubject(dto.getAssunto());
 
@@ -68,7 +68,7 @@ public class EmailService {
             mailSender.send(message);
             return "Feedback enviado com sucesso!";
         } catch (Exception e) {
-            e.printStackTrace(); // bom pra logar o erro detalhado
+            e.printStackTrace(); 
             return "Erro ao enviar email: " + e.getMessage();
         }
     }

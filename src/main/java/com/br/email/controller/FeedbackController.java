@@ -10,6 +10,8 @@ import org.springframework.web.bind.annotation.RestController;
 import com.br.email.model.dto.FeedbackDto;
 import com.br.email.service.EmailService;
 
+import jakarta.validation.Valid;
+
 @RestController
 @RequestMapping("/api/feedback")
 @CrossOrigin(origins = "*") 
@@ -18,7 +20,7 @@ public class FeedbackController {
     private EmailService emailService;
 
     @PostMapping
-    public String enviarFeedback(@RequestBody FeedbackDto dto) {
+    public String enviarFeedback(@RequestBody @Valid FeedbackDto dto) {
         return emailService.enviarEmailFeedback(dto);
     }
 }
