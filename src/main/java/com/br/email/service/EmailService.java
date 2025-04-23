@@ -1,7 +1,11 @@
 package com.br.email.service;
 
 import java.nio.charset.StandardCharsets;
+import java.time.Duration;
+import java.time.LocalDateTime;
 import java.util.Properties;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.javamail.JavaMailSenderImpl;
@@ -15,6 +19,8 @@ import jakarta.mail.internet.InternetAddress;
 
 @Service
 public class EmailService {
+
+    private final ConcurrentMap<String, LocalDateTime> ultimoEnvioPorEmail = new ConcurrentHashMap<>();
 
     @Value("${spring.mail.username}")
     private String username;
@@ -35,6 +41,19 @@ public class EmailService {
     private String starttls;
 
     public String enviarEmailFeedback(FeedbackDto dto) {
+        String emailUsuario = dto.getEmail();
+        LocalDateTime agora = LocalDateTime.now();
+
+        // Verifica se já foi enviado e se passou menos de 5 minutos
+        if (ultimoEnvioPorEmail.containsKey(emailUsuario)) {
+            LocalDateTime ultimoEnvio = ultimoEnvioPorEmail.get(emailUsuario);
+            Duration duracao = Duration.between(ultimoEnvio, agora);
+            if (duracao.toMinutes() < 5) {
+                long segundosRestantes = 300 - duracao.getSeconds();
+                return "Aguarde " + segundosRestantes + " segundos para enviar outro feedback.";
+            }
+        }
+
         try {
             JavaMailSenderImpl mailSender = new JavaMailSenderImpl();
             mailSender.setHost(host);
@@ -52,7 +71,7 @@ public class EmailService {
             MimeMessageHelper helper = new MimeMessageHelper(message, "utf-8");
 
             helper.setFrom(new InternetAddress(username));
-            helper.setTo(username); 
+            helper.setTo(username);
             helper.setReplyTo(dto.getEmail());
             helper.setSubject(dto.getAssunto());
 
@@ -66,9 +85,13 @@ public class EmailService {
             helper.setEncodeFilenames(true);
 
             mailSender.send(message);
+
+            // Atualiza o tempo do último envio
+            ultimoEnvioPorEmail.put(emailUsuario, agora);
+
             return "Feedback enviado com sucesso!";
         } catch (Exception e) {
-            e.printStackTrace(); 
+            e.printStackTrace();
             return "Erro ao enviar email: " + e.getMessage();
         }
     }
