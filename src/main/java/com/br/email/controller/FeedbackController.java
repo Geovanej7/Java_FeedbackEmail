@@ -21,7 +21,8 @@ public class FeedbackController {
 
     @PostMapping
     public ResponseEntity<String> enviarFeedback(@RequestBody @Valid FeedbackDto dto) {
-        String resposta = emailService.enviarEmailFeedback(dto);
-        return ResponseEntity.ok(resposta);
+        emailService.enviarEmailFeedback(dto);
+        return ResponseEntity.ok("{\"message\":\"Mensagem enviada com sucesso!\"}");
+
     }
 }
