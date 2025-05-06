@@ -2,6 +2,7 @@ package com.br.email.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -14,6 +15,8 @@ import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/api/feedback")
+@CrossOrigin(origins = "https://angular-portifolio-red.vercel.app")
+
 public class FeedbackController {
 
     @Autowired
