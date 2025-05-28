@@ -15,7 +15,7 @@ import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/api/feedback")
-@CrossOrigin(origins = "https://angular-portifolio-red.vercel.app")
+@CrossOrigin(origins = "https://geovanefullstack.vercel.app/")
 
 public class FeedbackController {
 
